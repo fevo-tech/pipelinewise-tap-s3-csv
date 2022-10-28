@@ -22,6 +22,7 @@ LOGGER = get_logger('tap_s3_csv')
 SDC_SOURCE_BUCKET_COLUMN = "_sdc_source_bucket"
 SDC_SOURCE_FILE_COLUMN = "_sdc_source_file"
 SDC_SOURCE_LINENO_COLUMN = "_sdc_source_lineno"
+SDC_SOURCE_UPDATED_AT_COLUMN = "_sdc_source_updated_at"
 
 
 def retry_pattern():
@@ -92,6 +93,7 @@ def get_sampled_schema_for_table(config: Dict, table_spec: Dict) -> Dict:
         SDC_SOURCE_BUCKET_COLUMN: {'type': 'string'},
         SDC_SOURCE_FILE_COLUMN: {'type': 'string'},
         SDC_SOURCE_LINENO_COLUMN: {'type': 'integer'},
+        SDC_SOURCE_UPDATED_AT_COLUMN: {'type': 'string', 'format': 'date-time'},
         SDC_EXTRA_COLUMN: {'type': 'array', 'items': {'type': 'string'}},
     }
 

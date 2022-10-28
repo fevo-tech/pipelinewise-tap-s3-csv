@@ -2,6 +2,7 @@
 Syncing related functions
 """
 
+from datetime import datetime
 import sys
 import csv
 from typing import Dict
@@ -41,7 +42,7 @@ def sync_stream(config: Dict, state: Dict, table_spec: Dict, stream: Dict) -> in
     # based on anything else then we could just sync files as we see them.
     for s3_file in sorted(s3_files, key=lambda item: item['last_modified']):
         records_streamed += sync_table_file(
-            config, s3_file['key'], table_spec, stream)
+            config, s3_file['key'], s3_file['last_modified'].isoformat(), table_spec, stream)
 
         state = write_bookmark(state, table_name, 'modified_since', s3_file['last_modified'].isoformat())
         write_state(state)
@@ -51,11 +52,12 @@ def sync_stream(config: Dict, state: Dict, table_spec: Dict, stream: Dict) -> in
     return records_streamed
 
 
-def sync_table_file(config: Dict, s3_path: str, table_spec: Dict, stream: Dict) -> int:
+def sync_table_file(config: Dict, s3_path: str, s3_date: str, table_spec: Dict, stream: Dict) -> int:
     """
     Sync a given csv found file
     :param config: tap configuration
     :param s3_path: file path given by S3
+    :param s3_date: file last modified datetime given by S3
     :param table_spec: tables specs
     :param stream: Stream data
     :return: number of streamed records
@@ -86,7 +88,8 @@ def sync_table_file(config: Dict, s3_path: str, table_spec: Dict, stream: Dict) 
             s3.SDC_SOURCE_FILE_COLUMN: s3_path,
 
             # index zero, +1 for header row
-            s3.SDC_SOURCE_LINENO_COLUMN: records_synced + 2
+            s3.SDC_SOURCE_LINENO_COLUMN: records_synced + 2,
+            s3.SDC_SOURCE_UPDATED_AT_COLUMN: s3_date
         }
         rec = {**row, **custom_columns}
 
